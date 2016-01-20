@@ -11,6 +11,12 @@ import (
 var IndexCommand = cli.Command{
 	Name:        "index",
 	Usage:       "Build an index for files in the current directory",
+	Flags: []cli.Flag {
+		cli.BoolFlag{
+			Name: "dry,d",
+			Usage: "Dry run only",
+		},
+	},
 	Action: func(c *cli.Context) {
 		fmt.Println("Counting files, this may take a few minutes...")
 
@@ -40,10 +46,12 @@ var IndexCommand = cli.Command{
 
 		CleanIndex(version, hashIndex, pathIndex)
 
-		e = SaveHashIndex(hashIndex, dirPath)
-		panicIfErr(e)
-		e = SavePathIndex(pathIndex, dirPath)
-		panicIfErr(e)
+		if !c.Bool("dry") {
+			e = SaveHashIndex(hashIndex, dirPath)
+			panicIfErr(e)
+			e = SavePathIndex(pathIndex, dirPath)
+			panicIfErr(e)
+		}
 
 		bar.FinishPrint("Index completed.")
 	},
@@ -52,6 +60,12 @@ var IndexCommand = cli.Command{
 var DeduplicateCommand = cli.Command{
 	Name:        "dd",
 	Usage:       "Remove duplicated files",
+	Flags: []cli.Flag {
+		cli.BoolFlag{
+			Name: "dry,d",
+			Usage: "Dry run only",
+		},
+	},
 	Action: func(c *cli.Context) {
 		dirPath, e := os.Getwd()
 		panicIfErr(e)
