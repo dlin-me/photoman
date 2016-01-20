@@ -64,38 +64,26 @@ func TestFile(fi os.FileInfo) (bool, error) {
 	return true, nil
 }
 
-func KeepOldestFile(filePaths []string) ([]string, error) {
-
+func OldestFile(filePaths []string) (string, error) {
 	oldestPath := filePaths[0]
 	oldestModTime, err := LastModTime(filePaths[0])
-	fileRemoved := []string{}
 
 	if err != nil {
-		return fileRemoved, err
+		return oldestPath, err
 	}
 
 	for _, path := range filePaths[1:] {
 		modTime, err := LastModTime(path)
 
 		if err != nil {
-			return fileRemoved, err
+			return oldestPath, err
 		}
 
 		if modTime.Before(oldestModTime) {
-			err = os.Remove(oldestPath)
-			fileRemoved = append(fileRemoved, oldestPath)
 			oldestPath = path
 			oldestModTime = modTime
-		} else {
-			err = os.Remove(path)
-			fileRemoved = append(fileRemoved, path)
 		}
-
-		if err != nil {
-			return fileRemoved, err
-		}
-
 	}
 
-	return fileRemoved, nil
+	return oldestPath, err
 }

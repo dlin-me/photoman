@@ -31,25 +31,22 @@ var IndexCommand = cli.Command{
 		t := time.Now()
 		version := t.Format("20060102150405")
 
-		hashIndex, _ := RestoreHashIndex(dirPath)
-		pathIndex, _ := RestorePathIndex(dirPath)
+		dbIndex, _ := RestoreIndex(dirPath)
 
  		bar := pb.StartNew(count)
 
 		walkfunc := func(path string, fi os.FileInfo, err error) error {
 			bar.Increment()
-			return IndexFile(path, version, hashIndex, pathIndex)
+			return IndexFile(path, version, dbIndex)
 		}
 
 		e = WalkFilesInPath(dirPath, walkfunc)
 		panicIfErr(e)
 
-		CleanIndex(version, hashIndex, pathIndex)
+		CleanIndex(version, dbIndex)
 
 		if !c.Bool("dry") {
-			e = SaveHashIndex(hashIndex, dirPath)
-			panicIfErr(e)
-			e = SavePathIndex(pathIndex, dirPath)
+			e = SaveIndex(dbIndex, dirPath)
 			panicIfErr(e)
 		}
 
@@ -70,30 +67,36 @@ var DeduplicateCommand = cli.Command{
 		dirPath, e := os.Getwd()
 		panicIfErr(e)
 
-		hashIndex, _ := RestoreHashIndex(dirPath)
-		pathIndex, _ := RestorePathIndex(dirPath)
-
-		duplicates := ExtractDuplicatedFiles(hashIndex)
+		dbIndex, _ := RestoreIndex(dirPath)
+		duplicates := ExtractDuplicatedFiles(dbIndex)
 
 		fmt.Printf("Found %v duplicated files\n", len(duplicates))
 
 		for _, paths := range duplicates {
 
-			fileRemoved, e := KeepOldestFile(paths)
+			toKeep, e := OldestFile(paths)
 
 			panicIfErr(e)
 
-			for _, removedPath := range fileRemoved {
-				RemoveFileFromIndex(removedPath, hashIndex, pathIndex)
+			for _, path := range paths {
 
-				fmt.Printf("Removed file: %v\n", removedPath);
+				if toKeep != path {
+
+					if  !c.Bool("dry") {
+						e := os.Remove(path)
+						panicIfErr(e)
+						delete(dbIndex, path)
+					}
+
+					fmt.Printf("Duplicated file: %v\n", path);
+				}
 			}
 		}
 
-		e = SaveHashIndex(hashIndex, dirPath)
-		panicIfErr(e)
-		e = SavePathIndex(pathIndex, dirPath)
-		panicIfErr(e)
+		if !c.Bool("dry") {
+			e = SaveIndex(dbIndex, dirPath)
+			panicIfErr(e)
+		}
 	},
 }
 
