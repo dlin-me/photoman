@@ -88,7 +88,7 @@ var DeduplicateCommand = cli.Command{
 						delete(dbIndex, path)
 					}
 
-					fmt.Printf("Duplicated file: %v\n", path);
+					fmt.Printf("Duplicated file: %v\n", FormatDuplicatedFile(toKeep, path));
 				}
 			}
 		}

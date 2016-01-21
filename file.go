@@ -87,3 +87,21 @@ func OldestFile(filePaths []string) (string, error) {
 
 	return oldestPath, err
 }
+
+func FormatDuplicatedFile(path1 string, path2 string) string {
+	byteArray1 := []byte(path1)
+	byteArray2 := []byte(path2)
+	splitPoint := 0
+
+	for i, v := range byteArray1 {
+		if v != byteArray2[i] {
+			break
+		}
+
+		if v == '/' {
+			splitPoint = i
+		}
+	}
+
+	return string(byteArray1[0:splitPoint+1]) + "[ " + string(byteArray1[splitPoint+1:]) + " == " + string(byteArray2[splitPoint+1:]) + " ]"
+}
