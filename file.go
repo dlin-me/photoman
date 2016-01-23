@@ -79,7 +79,7 @@ func OldestFile(filePaths []string) (string, error) {
 			return oldestPath, err
 		}
 
-		if modTime.Before(oldestModTime) {
+		if modTime.Before(oldestModTime) || modTime.Equal(oldestModTime) && len(path) < len(oldestPath) {
 			oldestPath = path
 			oldestModTime = modTime
 		}
