@@ -7,6 +7,10 @@ import (
 	"os"
 	"time"
 	"path/filepath"
+	"github.com/rwcarlsen/goexif/exif"
+	"strings"
+	"errors"
+	"strconv"
 )
 
 // computes MD5 hash for given file.
@@ -88,6 +92,26 @@ func OldestFile(filePaths []string) (string, error) {
 	return oldestPath, err
 }
 
+func GetExifDateTime(filePath string) (time.Time, error) {
+	var tm time.Time
+
+	if !strings.HasPrefix(strings.ToLower(filepath.Ext(filePath)), ".jpg") {
+		return tm, errors.New("Type not supported")
+	}
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		return tm, err
+	}
+
+	x, err := exif.Decode(f)
+	if err != nil {
+		return tm, err
+	}
+
+	return x.DateTime()
+}
+
 func FormatDuplicatedFile(path1 string, path2 string) string {
 	byteArray1 := []byte(path1)
 	byteArray2 := []byte(path2)
@@ -103,5 +127,16 @@ func FormatDuplicatedFile(path1 string, path2 string) string {
 		}
 	}
 
-	return string(byteArray1[0:splitPoint+1]) + "[ " + string(byteArray1[splitPoint+1:]) + " == " + string(byteArray2[splitPoint+1:]) + " ]"
+	return string(byteArray1[0:splitPoint + 1]) + "[ " + string(byteArray1[splitPoint + 1:]) + " == " + string(byteArray2[splitPoint + 1:]) + " ]"
+}
+
+func GetProposedPath(t time.Time) string {
+	path, _ := os.Getwd()
+	return filepath.Join(
+		path,
+		string(os.PathSeparator),
+		strconv.Itoa(t.Year()),
+		string(os.PathSeparator),
+		strconv.Itoa(t.Year()) + "_" + strconv.Itoa(int(t.Month())),
+	)
 }

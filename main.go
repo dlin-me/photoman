@@ -24,6 +24,7 @@ func main() {
 	app.Commands = []cli.Command{
 		IndexCommand,
 		DeduplicateCommand,
+		MoveCommand,
 	}
 
 	err := app.Run(os.Args)

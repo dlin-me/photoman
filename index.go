@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"bytes"
 	"os"
+	"errors"
 )
 
 func RestoreIndex(dirPath string) (map[string][]string, error) {
@@ -48,6 +49,18 @@ func SaveIndex(index map[string][]string, dirPath string) error {
 	return err
 }
 
+func RenameFileInIndex(oldPath string, newPath string, dbMap map[string][]string) error {
+	v, ok := dbMap[oldPath];
+
+	if ok {
+		dbMap[newPath] = v
+		delete(dbMap, oldPath)
+		return nil
+	}else{
+		return errors.New("Old file does not exist")
+	}
+}
+
 func IndexFile(filePath string, version string, dbMap map[string][]string) error {
 	_, ok := dbMap[filePath];
 
@@ -58,7 +71,13 @@ func IndexFile(filePath string, version string, dbMap map[string][]string) error
 			return err
 		}
 
-		dbMap[filePath] = []string{hash, version}
+		t, err := GetExifDateTime(filePath)
+
+		if err == nil {
+			dbMap[filePath] = []string{hash, version, t.Format("20060102150405")}
+		} else {
+			dbMap[filePath] = []string{hash, version}
+		}
 
 	} else {
 		dbMap[filePath][1] = version
@@ -104,7 +123,6 @@ func ExtractDuplicatedFiles(dbMap map[string][]string) map[string][]string {
 
 	return result;
 }
-
 
 
 

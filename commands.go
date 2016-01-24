@@ -6,6 +6,7 @@ import (
 	"github.com/cheggaaa/pb"
 	"os"
 	"time"
+	"path/filepath"
 )
 
 var IndexCommand = cli.Command{
@@ -18,20 +19,23 @@ var IndexCommand = cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) {
-		fmt.Println("Counting files, this may take a few minutes...")
-
 		dirPath, e := os.Getwd()
 		panicIfErr(e)
 
+		fmt.Println("Scanning files, this may take a few minutes...")
 		count, e := CountFilesInPath(dirPath)
 		panicIfErr(e)
 
-		fmt.Printf("Indexing %v files...\n", count)
+		dbIndex, e := RestoreIndex(dirPath)
+
+		if len(dbIndex) < 0 {
+			fmt.Printf("Indexing %v files...\n", count)
+		} else {
+			fmt.Printf("Updating index for %v files...\n", count)
+		}
 
 		t := time.Now()
 		version := t.Format("20060102150405")
-
-		dbIndex, _ := RestoreIndex(dirPath)
 
  		bar := pb.StartNew(count)
 
@@ -97,6 +101,51 @@ var DeduplicateCommand = cli.Command{
 			e = SaveIndex(dbIndex, dirPath)
 			panicIfErr(e)
 		}
+	},
+}
+
+var MoveCommand = cli.Command{
+	Name:        "move",
+	Usage:       "Move files with exif data to proposed directory YYYY/YYYY_MM",
+	Flags: []cli.Flag {
+		cli.BoolFlag{
+			Name: "dry,d",
+			Usage: "Dry run only",
+		},
+	},
+
+	Action: func(c *cli.Context) {
+		dirPath, e := os.Getwd()
+		panicIfErr(e)
+
+		dbIndex, _ := RestoreIndex(dirPath)
+		counter := 0
+
+		for path, data := range dbIndex {
+
+			if len(data) == 3 {
+				tm, e := time.Parse("20060102150405", data[2]);
+				panicIfErr(e)
+				proposedDir := GetProposedPath(tm)
+				proposedPath := filepath.Join(proposedDir, filepath.Base(path))
+
+				if proposedPath != path {
+					if !c.Bool("dry") {
+						// move files now
+						os.MkdirAll(proposedDir, 0777)
+						e = os.Rename(path, proposedPath)
+						panicIfErr(e)
+
+						// update index for moving
+						RenameFileInIndex(path, proposedPath, dbIndex)
+					}
+
+					counter++
+				}
+			}
+		}
+
+		fmt.Printf("Moved %v files\n", counter)
 	},
 }
 
