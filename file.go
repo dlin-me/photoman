@@ -11,6 +11,7 @@ import (
 	"strings"
 	"errors"
 	"strconv"
+	"io/ioutil"
 )
 
 // computes MD5 hash for given file.
@@ -139,4 +140,12 @@ func GetProposedPath(t time.Time) string {
 		string(os.PathSeparator),
 		strconv.Itoa(t.Year()) + "_" + strconv.Itoa(int(t.Month())),
 	)
+}
+
+func RemoveEmptyDir(path string) {
+	if files, _ := ioutil.ReadDir(path); len(files) == 0 {
+		os.Remove(path)
+
+		RemoveEmptyDir(filepath.Dir(path))
+	}
 }

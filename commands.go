@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 	"path/filepath"
+
 )
 
 var IndexCommand = cli.Command{
@@ -131,13 +132,19 @@ var MoveCommand = cli.Command{
 
 				if proposedPath != path {
 					if !c.Bool("dry") {
-						// move files now
-						os.MkdirAll(proposedDir, 0777)
+						// create dir
+						e = os.MkdirAll(proposedDir, os.ModeDir|0750)
+						panicIfErr(e)
+
+						// move
 						e = os.Rename(path, proposedPath)
 						panicIfErr(e)
 
 						// update index for moving
 						RenameFileInIndex(path, proposedPath, dbIndex)
+
+						// clear empty dir
+						RemoveEmptyDir(filepath.Dir(path))
 					}
 
 					counter++
