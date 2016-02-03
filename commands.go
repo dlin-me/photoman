@@ -39,9 +39,15 @@ var IndexCommand = cli.Command{
 		version := t.Format("20060102150405")
 
  		bar := pb.StartNew(count)
+		counter := 0
 
 		walkfunc := func(path string, fi os.FileInfo, err error) error {
 			bar.Increment()
+			counter++
+			if counter % 2000 == 0 && !c.Bool("dry") {
+				e = SaveIndex(dbIndex, dirPath)
+				panicIfErr(e)
+			}
 			return IndexFile(path, version, dbIndex)
 		}
 
