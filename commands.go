@@ -83,6 +83,10 @@ var DeduplicateCommand = cli.Command{
 
 		fmt.Printf("Found %v duplicated files\n", len(duplicates))
 
+		if len(duplicates) == 0 {
+			return
+		}
+
 		bar := pb.StartNew(len(duplicates))
 
 		for _, paths := range duplicates {
@@ -144,6 +148,12 @@ var MoveCommand = cli.Command{
 					toMove[path] = proposedPath
 				}
 			}
+		}
+
+		fmt.Printf("Found %v files for relocation\n", len(toMove))
+
+		if len(toMove) == 0 {
+			return
 		}
 
 		bar := pb.StartNew(len(toMove))
