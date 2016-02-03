@@ -162,6 +162,11 @@ var MoveCommand = cli.Command{
 			bar.Increment()
 		}
 
+		if !c.Bool("dry") {
+			e = SaveIndex(dbIndex, dirPath)
+			panicIfErr(e)
+		}
+
 		bar.FinishPrint("Files relocated.")
 	},
 }
