@@ -77,6 +77,8 @@ var DeduplicateCommand = cli.Command{
 
 		fmt.Printf("Found %v duplicated files\n", len(duplicates))
 
+		bar := pb.StartNew(len(duplicates))
+
 		for _, paths := range duplicates {
 
 			toKeep, e := OldestFile(paths)
@@ -92,6 +94,7 @@ var DeduplicateCommand = cli.Command{
 						panicIfErr(e)
 						delete(dbIndex, path)
 					}
+					bar.Increment()
 
 					fmt.Printf("Duplicated file: %v\n", FormatDuplicatedFile(toKeep, path));
 				}
@@ -102,6 +105,8 @@ var DeduplicateCommand = cli.Command{
 			e = SaveIndex(dbIndex, dirPath)
 			panicIfErr(e)
 		}
+
+		bar.FinishPrint("Deduplicated files removed.")
 	},
 }
 
@@ -120,10 +125,9 @@ var MoveCommand = cli.Command{
 		panicIfErr(e)
 
 		dbIndex, _ := RestoreIndex(dirPath)
-		counter := 0
+		toMove := make(map[string]string)
 
 		for path, data := range dbIndex {
-
 			if len(data) == 3 {
 				tm, e := time.Parse("20060102150405", data[2]);
 				panicIfErr(e)
@@ -131,28 +135,34 @@ var MoveCommand = cli.Command{
 				proposedPath := filepath.Join(proposedDir, filepath.Base(path))
 
 				if proposedPath != path {
-					if !c.Bool("dry") {
-						// create dir
-						e = os.MkdirAll(proposedDir, os.ModeDir|0750)
-						panicIfErr(e)
-
-						// move
-						e = os.Rename(path, proposedPath)
-						panicIfErr(e)
-
-						// update index for moving
-						RenameFileInIndex(path, proposedPath, dbIndex)
-
-						// clear empty dir
-						RemoveEmptyDir(filepath.Dir(path))
-					}
-
-					counter++
+					toMove[path] = proposedPath
 				}
 			}
 		}
 
-		fmt.Printf("Moved %v files\n", counter)
+		bar := pb.StartNew(len(toMove))
+
+		for path, proposedPath := range toMove {
+			if !c.Bool("dry") {
+				// create dir
+				e = os.MkdirAll(filepath.Dir(proposedPath), os.ModeDir|0750)
+				panicIfErr(e)
+
+				// move
+				e = os.Rename(path, proposedPath)
+				panicIfErr(e)
+
+				// update index for moving
+				RenameFileInIndex(path, proposedPath, dbIndex)
+
+				// clear empty dir
+				RemoveEmptyDir(filepath.Dir(path))
+			}
+
+			bar.Increment()
+		}
+
+		bar.FinishPrint("Files relocated.")
 	},
 }
 
