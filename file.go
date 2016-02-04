@@ -12,6 +12,7 @@ import (
 	"errors"
 	"strconv"
 	"io/ioutil"
+	"fmt"
 )
 
 // computes MD5 hash for given file.
@@ -138,7 +139,7 @@ func GetProposedPath(t time.Time) string {
 		string(os.PathSeparator),
 		strconv.Itoa(t.Year()),
 		string(os.PathSeparator),
-		strconv.Itoa(t.Year()) + "_" + strconv.Itoa(int(t.Month())),
+		strconv.Itoa(t.Year()) + "_" + fmt.Sprintf("%.2d", int(t.Month())),
 	)
 }
 

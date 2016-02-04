@@ -103,12 +103,13 @@ var DeduplicateCommand = cli.Command{
 						e := os.Remove(path)
 						panicIfErr(e)
 						delete(dbIndex, path)
+					} else {
+						fmt.Printf("Duplicated file: %v\n", FormatDuplicatedFile(toKeep, path));
 					}
-					bar.Increment()
-
-					fmt.Printf("Duplicated file: %v\n", FormatDuplicatedFile(toKeep, path));
 				}
 			}
+
+			bar.Increment()
 		}
 
 		if !c.Bool("dry") {
