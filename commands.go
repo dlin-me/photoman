@@ -158,6 +158,7 @@ var MoveCommand = cli.Command{
 		}
 
 		bar := pb.StartNew(len(toMove))
+		counter := 0
 
 		for path, proposedPath := range toMove {
 			if !c.Bool("dry") {
@@ -174,6 +175,13 @@ var MoveCommand = cli.Command{
 
 				// clear empty dir
 				RemoveEmptyDir(filepath.Dir(path))
+
+				counter++
+
+				if counter % 1000 == 0 && !c.Bool("dry"){
+					e = SaveIndex(dbIndex, dirPath)
+					panicIfErr(e)
+				}
 			}
 
 			bar.Increment()
