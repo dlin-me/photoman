@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"fmt"
+	"regexp"
 )
 
 // computes MD5 hash for given file.
@@ -72,6 +73,7 @@ func TestFile(fi os.FileInfo) (bool, error) {
 
 func OldestFile(filePaths []string) (string, error) {
 	oldestPath := filePaths[0]
+	movedPathPattern := regexp.MustCompile(`[0-9]{4}_[0-9]{2}`)
 	oldestModTime, err := LastModTime(filePaths[0])
 
 	if err != nil {
@@ -85,7 +87,7 @@ func OldestFile(filePaths []string) (string, error) {
 			return oldestPath, err
 		}
 
-		if modTime.Before(oldestModTime) || modTime.Equal(oldestModTime) && len(path) < len(oldestPath) {
+		if modTime.Before(oldestModTime) || modTime.Equal(oldestModTime) && movedPathPattern.MatchString(path) && !movedPathPattern.MatchString(oldestPath) {
 			oldestPath = path
 			oldestModTime = modTime
 		}
