@@ -92,14 +92,12 @@ var DeduplicateCommand = cli.Command{
 		for _, paths := range duplicates {
 
 			toKeep, e := OldestFile(paths)
-
 			panicIfErr(e)
 
 			for _, path := range paths {
 
 				if toKeep != path {
-
-					if  !c.Bool("dry") {
+					if !c.Bool("dry") {
 						e := os.Remove(path)
 						panicIfErr(e)
 						delete(dbIndex, path)
@@ -162,6 +160,13 @@ var MoveCommand = cli.Command{
 
 		for path, proposedPath := range toMove {
 			if !c.Bool("dry") {
+				// normalise proposedPath
+				postfix := 0
+				for ExistFile(proposedPath) {
+					postfix++
+					proposedPath = PostfixFilePath(proposedPath, postfix)
+				}
+
 				// create dir
 				e = os.MkdirAll(filepath.Dir(proposedPath), os.ModeDir|0750)
 				panicIfErr(e)

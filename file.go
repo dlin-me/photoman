@@ -152,3 +152,18 @@ func RemoveEmptyDir(path string) {
 		RemoveEmptyDir(filepath.Dir(path))
 	}
 }
+
+func ExistFile(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true;
+	}
+
+	return false;
+}
+
+func PostfixFilePath(path string, postfix int) string {
+	extension := filepath.Ext(path)
+	basePath := path[0:len(path)-len(extension)]
+
+	return basePath + "_" + strconv.Itoa(postfix) + extension
+}
