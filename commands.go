@@ -127,6 +127,10 @@ var MoveCommand = cli.Command{
 			Name: "dry,d",
 			Usage: "Dry run only",
 		},
+		cli.BoolFlag{
+			Name: "greedy,g",
+			Usage: "Move files with modified datetime if exif data is not available",
+		},
 	},
 
 	Action: func(c *cli.Context) {
@@ -137,9 +141,19 @@ var MoveCommand = cli.Command{
 		toMove := make(map[string]string)
 
 		for path, data := range dbIndex {
+			var tm time.Time
+			var e error
+
 			if len(data) == 3 {
-				tm, e := time.Parse("20060102150405", data[2]);
+				tm, e = time.Parse("20060102150405", data[2]);
 				panicIfErr(e)
+
+			} else if c.Bool("greedy") {
+				tm, e =  LastModTime(path)
+				panicIfErr(e)
+			}
+
+			if !tm.IsZero() {
 				proposedDir := GetProposedPath(tm)
 				proposedPath := filepath.Join(proposedDir, filepath.Base(path))
 
