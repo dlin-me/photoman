@@ -167,3 +167,13 @@ func PostfixFilePath(path string, postfix int) string {
 
 	return basePath + "_" + strconv.Itoa(postfix) + extension
 }
+
+func GetRelativePath(path string) (string, error) {
+	currentPath, e := os.Getwd()
+
+	if e != nil {
+		return "", e
+	}
+
+	return filepath.Rel(currentPath, path)
+}

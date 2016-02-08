@@ -24,7 +24,23 @@ func RestoreIndex(dirPath string) (map[string][]string, error) {
 	d := gob.NewDecoder(b)
 	err = d.Decode(&decodedMap)
 
-	return decodedMap, err
+	if err != nil {
+		return decodedMap, err
+	} else {
+		absIndex := make(map[string][]string)
+
+		for path, data := range decodedMap {
+			absPath, err := filepath.Abs(path)
+
+			if err != nil {
+				return absIndex, err
+			}
+
+			absIndex[absPath] = data
+		}
+
+		return absIndex, err;
+	}
 }
 
 func SaveIndex(index map[string][]string, dirPath string) error {
@@ -36,9 +52,22 @@ func SaveIndex(index map[string][]string, dirPath string) error {
 		return err
 	}
 
+	// replace abs path with rel paths
+	relIndex := make(map[string][]string)
+
+	for path, data := range index {
+		relPath, err := GetRelativePath(path)
+
+		if err != nil {
+			return err
+		}
+
+		relIndex[relPath] = data
+	}
+
 	b := new(bytes.Buffer)
 	e := gob.NewEncoder(b)
-	err = e.Encode(index)
+	err = e.Encode(relIndex)
 
 	if err != nil {
 		return err
@@ -56,7 +85,7 @@ func RenameFileInIndex(oldPath string, newPath string, dbMap map[string][]string
 		dbMap[newPath] = v
 		delete(dbMap, oldPath)
 		return nil
-	}else{
+	}else {
 		return errors.New("Old file does not exist")
 	}
 }
