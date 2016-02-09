@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"github.com/codegangsta/cli"
 	"github.com/cheggaaa/pb"
 	"os"
 	"time"
 	"path/filepath"
-
 )
 
 var IndexCommand = cli.Command{
@@ -134,6 +134,11 @@ var MoveCommand = cli.Command{
 	},
 
 	Action: func(c *cli.Context) {
+		if c.Bool("greedy") && len(c.Args()) < 1 {
+			fmt.Println("You must specify a directory if you want to rename/move all files based on modified date")
+			return
+		}
+
 		dirPath, e := os.Getwd()
 		panicIfErr(e)
 
@@ -144,11 +149,15 @@ var MoveCommand = cli.Command{
 			var tm time.Time
 			var e error
 
+			relPath, e := GetRelativePath(path)
+			panicIfErr(e)
+
 			if len(data) == 3 {
 				tm, e = time.Parse("20060102150405", data[2]);
 				panicIfErr(e)
 
-			} else if c.Bool("greedy") {
+			} else if target:=c.Args()[0]; c.Bool("greedy") && strings.HasPrefix(relPath, target + string(os.PathSeparator)) {
+
 				tm, e =  LastModTime(path)
 				panicIfErr(e)
 			}
