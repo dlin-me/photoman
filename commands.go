@@ -156,7 +156,7 @@ var MoveCommand = cli.Command{
 				tm, e = time.Parse("20060102150405", data[2]);
 				panicIfErr(e)
 
-			} else if target:=c.Args()[0]; c.Bool("greedy") && strings.HasPrefix(relPath, target + string(os.PathSeparator)) {
+			} else if  c.Bool("greedy") && strings.HasPrefix(relPath, c.Args()[0] + string(os.PathSeparator)) {
 
 				tm, e =  LastModTime(path)
 				panicIfErr(e)
