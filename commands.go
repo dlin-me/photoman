@@ -19,7 +19,7 @@ var IndexCommand = cli.Command{
 			Usage: "Dry run only",
 		},
 	},
-	Action: func(c *cli.Context) {
+	Action: func(c *cli.Context) error {
 		dirPath, e := os.Getwd()
 		panicIfErr(e)
 
@@ -62,6 +62,8 @@ var IndexCommand = cli.Command{
 		}
 
 		bar.FinishPrint("Index completed.")
+
+		return nil
 	},
 }
 
@@ -74,7 +76,7 @@ var DeduplicateCommand = cli.Command{
 			Usage: "Dry run only",
 		},
 	},
-	Action: func(c *cli.Context) {
+	Action: func(c *cli.Context) error {
 		dirPath, e := os.Getwd()
 		panicIfErr(e)
 
@@ -84,7 +86,7 @@ var DeduplicateCommand = cli.Command{
 		fmt.Printf("Found %v duplicated files\n", len(duplicates))
 
 		if len(duplicates) == 0 {
-			return
+			return nil
 		}
 
 		bar := pb.StartNew(len(duplicates))
@@ -116,6 +118,8 @@ var DeduplicateCommand = cli.Command{
 		}
 
 		bar.FinishPrint("Deduplicated files removed.")
+
+		return nil
 	},
 }
 
@@ -133,10 +137,10 @@ var MoveCommand = cli.Command{
 		},
 	},
 
-	Action: func(c *cli.Context) {
+	Action: func(c *cli.Context) error {
 		if c.Bool("greedy") && len(c.Args()) < 1 {
 			fmt.Println("You must specify a directory if you want to rename/move all files based on modified date")
-			return
+			return nil
 		}
 
 		dirPath, e := os.Getwd()
@@ -175,7 +179,7 @@ var MoveCommand = cli.Command{
 		fmt.Printf("Found %v files for relocation\n", len(toMove))
 
 		if len(toMove) == 0 {
-			return
+			return nil
 		}
 
 		bar := pb.StartNew(len(toMove))
@@ -221,6 +225,8 @@ var MoveCommand = cli.Command{
 		}
 
 		bar.FinishPrint("Files relocated.")
+
+		return nil
 	},
 }
 
