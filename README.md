@@ -84,3 +84,7 @@ GLOBAL OPTIONS:
     ```
     photoman move -g incoming
     ```
+
+# Update
+
+1. Go 1.6.3 does not support macOS Sierra. You need to upgrade to Go 1.7 or later.
