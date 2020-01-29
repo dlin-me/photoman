@@ -20,7 +20,7 @@ func main() {
 	app := cli.NewApp()
   	app.Name = "Photo Manager"
   	app.Usage = "Organise your photo files"
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Commands = []cli.Command{
 		IndexCommand,
 		DeduplicateCommand,

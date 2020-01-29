@@ -8,6 +8,7 @@ import (
 	"time"
 	"path/filepath"
 	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/mknote"
 	"strings"
 	"errors"
 	"strconv"
