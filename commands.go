@@ -93,7 +93,7 @@ var DeduplicateCommand = cli.Command{
 
 		for _, paths := range duplicates {
 
-			toKeep, e := OldestFile(paths)
+			toKeep, e := FileToKeep(paths)
 			panicIfErr(e)
 
 			for _, path := range paths {

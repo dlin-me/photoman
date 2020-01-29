@@ -71,7 +71,7 @@ func TestFile(fi os.FileInfo) (bool, error) {
 	return true, nil
 }
 
-func OldestFile(filePaths []string) (string, error) {
+func FileToKeep(filePaths []string) (string, error) {
 	oldestPath := filePaths[0]
 	movedPathPattern := regexp.MustCompile(`[0-9]{4}_[0-9]{2}`)
 	oldestModTime, err := LastModTime(filePaths[0])
@@ -87,7 +87,7 @@ func OldestFile(filePaths []string) (string, error) {
 			return oldestPath, err
 		}
 
-		if modTime.Before(oldestModTime) || modTime.Equal(oldestModTime) && movedPathPattern.MatchString(path) && !movedPathPattern.MatchString(oldestPath) {
+		if modTime.Before(oldestModTime) && !movedPathPattern.MatchString(oldestPath) {
 			oldestPath = path
 			oldestModTime = modTime
 		}

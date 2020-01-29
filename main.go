@@ -4,7 +4,7 @@ import (
 	// "fmt"
 	"log"
 	"os"
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 	// "github.com/cheggaaa/pb"
 	// "path/filepath"
 
