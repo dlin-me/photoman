@@ -2,6 +2,9 @@
 
 # photoman
 
+[Discontinued. The Go world has changed alot since v1.1 and many dependencies have disapeared. This app does not install.]
+
+
 A command line tool in Go for managing files. It supports file de-duplication and renaming.
 
 This tool was originally built for managing photo files taken by digital cameras. 
